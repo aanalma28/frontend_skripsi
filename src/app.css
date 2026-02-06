@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* 1. Definisi Dark Mode agar dikenali class .dark */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 2. Standarisasi Base Style */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  body {
+    @apply bg-white text-slate-900 antialiased transition-colors duration-500;
+  }
+  /* Memastikan elemen form tetap konsisten */
+  input, button {
+    @apply transition-all duration-200;
+  }
+}
+
+/* 3. Utility khusus jika dibutuhkan */
+.dark body {
+  @apply bg-slate-950 text-slate-100;
+}
