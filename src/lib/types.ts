@@ -1,8 +1,10 @@
 export interface TrafficLog {
+    id: number;
     ip: string;
     method: 'VPN' | 'DoH' | 'DoT' | 'None';
     status: 'Judol' | 'Normal';
-    confidence: number;    
+    confidence: number;
+    latent_coords: number[];
 }
 
 export interface TrafficStats {

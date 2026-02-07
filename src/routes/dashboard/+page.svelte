@@ -3,7 +3,7 @@
   import { trafficLogs, trafficStats, isAiConnected, socket } from '$lib/socket';
   import { ShieldAlert, Activity, ShieldCheck, BrainCircuit, Cpu, Info } from 'lucide-svelte';
   import { fly, fade } from 'svelte/transition'
-	import type { TrafficLog, TrafficStats } from '$lib/types';
+  import type { TrafficLog, TrafficStats } from '$lib/types';
   
   // sinkronisasi saat refresh menggunakan API di backend
   onMount(async () => {
