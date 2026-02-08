@@ -1,7 +1,7 @@
 export interface TrafficLog {
     id: number;
     ip: string;
-    method: 'VPN' | 'DoH' | 'DoT' | 'None';
+    method: 'VPN' | 'DoH/HTTPS' | 'DoT' | 'None';
     status: 'Judol' | 'Normal';
     confidence: number;
     latent_coords: number[];
