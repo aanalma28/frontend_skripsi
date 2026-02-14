@@ -10,7 +10,7 @@
   import AxisY from '$lib/components/AxisY.svelte';
 
   // Reactive data: Transformasi format store ke format yang dibaca LayerCake
-  $: chartData = $trafficLogs.map(log => ({
+  $: chartData = $trafficLogs.slice(0,50).map(log => ({
     x: log.latent_coords[0],
     y: log.latent_coords[1],
     status: log.status,

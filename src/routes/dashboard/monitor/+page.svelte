@@ -55,8 +55,8 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800/30">
-          {#each filteredLogs as log (log.id)}
-            <tr animate:flip={{duration: 400}} class="hover:bg-white/5 transition-colors">
+          {#each filteredLogs.slice(0, 30) as log (log.id)}
+            <tr class="hover:bg-white/5 transition-colors">
               <td class="p-4 text-slate-500 text-xs">{new Date().toLocaleTimeString()}</td>
               <td class="p-4 text-blue-400 font-bold">{log.ip}</td>
               <td class="p-4">

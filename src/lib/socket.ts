@@ -14,6 +14,3 @@ export const trafficStats = writable<TrafficStats>({
     judol_detected: 0
 })
 export const isAiConnected = writable<boolean>(false);
-
-socket.on("connect", () => isAiConnected.set(true));
-socket.on("disconnect", () => isAiConnected.set(false));

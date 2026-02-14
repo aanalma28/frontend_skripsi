@@ -6,43 +6,50 @@
 
   let { children } = $props();
 
-  // sinkronisasi saat refresh menggunakan API di backend
-  onMount(() => {
-    const updateHandler = (payload: {data: TrafficLog, stats: TrafficStats}) => {
-      // update untuk menambahkan log jaringan
-      trafficLogs.update(logs => [payload.data, ...logs].slice(0,50))
-      // set untuk mengubah angka stats jumlah log dan deteksi judol yang terbaru
-      trafficStats.set(payload.stats)
+onMount(() => {
+    let isInitialized = false;
+
+    async function initializeSystem() {
+        try {
+            // 1. Coba ambil data awal sampai berhasil
+            const response = await fetch("http://localhost:5000/api/initial-data");
+            if (!response.ok) throw new Error("Backend Busy");
+            
+            const payload = await response.json();
+            trafficLogs.set(payload.logs);
+            trafficStats.set(payload.stats);
+            
+            console.log("✅ Initial Data Synced. Starting WebSocket...");
+            
+            // 2. SETELAH initial data beres, baru aktifkan Socket
+            if (!socket.connected) {
+                socket.connect();
+            }
+            
+            // 3. Pasang listener            
+            socket.on("connect", () => isAiConnected.set(true));
+            socket.on("disconnect", () => isAiConnected.set(false));
+            socket.on('new_traffic', handleTraffic);
+            isInitialized = true;
+
+        } catch (err) {
+            console.error("❌ Sync failed, retrying in 3s...", err);
+            setTimeout(initializeSystem, 3000); // Retry terus
+        }
     }
 
-    // fetch data terbaru
-    const initData = async () => {
-      try{
-        // Koneksi ke socket
-        if (!socket.connected) socket.connect();
-
-        const response = await fetch("http://localhost:5000/api/initial-data")
-        const payload = await response.json()
-
-        // mengisi variable svelte store dengan data dari database
-        trafficLogs.set(payload.logs)
-        trafficStats.set(payload.stats)
-
-        // kode realtime dari websocket
-        socket.on('new_traffic', updateHandler)
-      }catch(err){
-        console.error("Gagal Sinkronisasi awal: ", err)
-      }      
-    }
-
-    initData()
-  
-    // 4. Cleanup: Mati saat logout / pindah ke luar grup dashboard
-    return () => {
-        console.log("Cleaning up socket listeners...");
-        socket.off('new_traffic', updateHandler);
+    const handleTraffic = (payload: {data: TrafficLog, stats: TrafficStats}) => {
+        trafficLogs.update(logs => [payload.data, ...logs].slice(0, 50));
+        trafficStats.set(payload.stats);
     };
-  })
+
+    initializeSystem();
+
+    return () => {
+        socket.off('new_traffic', handleTraffic);
+        socket.disconnect();
+    };
+});
 
 </script>
 
