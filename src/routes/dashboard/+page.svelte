@@ -1,32 +1,7 @@
-<script lang="ts">
-  import { onMount } from 'svelte'
+<script lang="ts">  
   import { trafficLogs, trafficStats, isAiConnected, socket } from '$lib/socket';
   import { ShieldAlert, Activity, ShieldCheck, BrainCircuit, Cpu, Info } from 'lucide-svelte';
-  import { fly, fade } from 'svelte/transition'
-  import type { TrafficLog, TrafficStats } from '$lib/types';
-  
-  // sinkronisasi saat refresh menggunakan API di backend
-  onMount(async () => {
-    try{
-        const response = await fetch("http://localhost:5000/api/initial-data")
-        const payload = await response.json()
-
-        // mengisi variable svelte store dengan data dari database
-        trafficLogs.set(payload.logs)
-        trafficStats.set(payload.stats)
-
-    }catch(err){
-        console.error("Gagal Sinkronisasi awal: ", err)
-    }
-  })
-
-  // kode realtime dari websocket
-  socket.on('new_traffic', (payload: {data: TrafficLog, stats: TrafficStats}) => {
-    // update untuk menambahkan log jaringan
-    trafficLogs.update(logs => [payload.data, ...logs].slice(0,50))
-    // set untuk mengubah angka stats jumlah log dan deteksi judol yang terbaru
-    trafficStats.set(payload.stats)
-  })  
+  import { fly, fade } from 'svelte/transition'    
 </script>
 
 <div class="min-h-screen w-full bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
