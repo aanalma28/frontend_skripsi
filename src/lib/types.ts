@@ -1,10 +1,26 @@
+export type LogType = 'FLOW' | 'VOTING'
+
 export interface TrafficLog {
     id: number;
+    type: LogType;
+    timestamp: string;
     ip: string;
-    method: 'VPN' | 'DoH/HTTPS' | 'DoT' | 'None';
-    status: 'Judol' | 'Normal';
-    confidence: number;
-    latent_coords: number[];
+    
+    // Properti untuk Type FLOW (Real-Time)
+    status?: string;
+    method?: string;
+    confidence?: number;
+    latent_coords?: [number, number];
+
+    // Properti untuk Type VOTING (Result per 3 menit)
+    final_label?: string;
+    final_method?: string;
+    avg_confidence?: number;
+    violation_rate?: string;
+    centroid?: [number, number];
+    is_blocked?: boolean;
+    action?: string;
+
 }
 
 export interface TrafficStats {

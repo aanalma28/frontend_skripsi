@@ -1,7 +1,7 @@
 <script lang="ts">
   import Sidebar from '$lib/components/Sidebar.svelte';
   import { onMount } from 'svelte'
-  import type { TrafficLog, TrafficStats } from '$lib/types';
+  import type { TrafficLog, TrafficStats, LogType } from '$lib/types';
   import { trafficLogs, trafficStats, isAiConnected, socket } from '$lib/socket';
 
   let { children } = $props();
@@ -38,9 +38,27 @@ onMount(() => {
         }
     }
 
-    const handleTraffic = (payload: {data: TrafficLog, stats: TrafficStats}) => {
-        trafficLogs.update(logs => [payload.data, ...logs].slice(0, 50));
-        trafficStats.set(payload.stats);
+    const handleTraffic = (payload: {type: LogType, data: any, stats: any}) => {
+        // Gabungkan type kedalam object data agar store konsisten
+        const newLogEntry: TrafficLog = {
+            ...payload.data,
+            type: payload.type,
+            timestamp: payload.data.timestamp || new Date().toISOString()
+        }
+
+        trafficLogs.update(currentLogs => {
+            const updated = [newLogEntry, ...currentLogs]
+            return updated.slice(0,50)
+        })
+
+        if(payload.stats){
+            trafficStats.set(payload.stats);
+        }
+
+        // Console log untuk debugging pas demo (opsional)
+        if (payload.type === 'VOTING') {
+            console.warn(`⚠️ [VOTING] IP ${payload.data.ip} virdict: ${payload.data.final_label}`);
+        }
     };
 
     initializeSystem();

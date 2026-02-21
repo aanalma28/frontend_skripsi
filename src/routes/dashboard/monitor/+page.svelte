@@ -1,16 +1,20 @@
 <script lang="ts">
   import { trafficLogs } from '$lib/socket';
-  import { Activity, ShieldAlert, ShieldCheck, Search } from 'lucide-svelte';
-  import { flip } from 'svelte/animate';
+  import { Activity, ShieldAlert, ShieldCheck, Search, Zap, Lock, Info } from 'lucide-svelte';
+  import { slide } from 'svelte/transition';
 
   let searchTerm = $state('');
   
-  // Filter log berdasarkan pencarian IP atau Method
+  // Filter log yang cerdas: Cek IP, method (flow), atau final_method (voting)
   let filteredLogs = $derived(
-    $trafficLogs.filter(log => 
-      log.ip.includes(searchTerm) || 
-      log.method.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    $trafficLogs.filter(log => {
+      const s = searchTerm.toLowerCase();
+      const ipMatch = log.ip.includes(s);
+      const methodMatch = log.type === 'FLOW' 
+        ? log.method?.toLowerCase().includes(s) 
+        : log.final_method?.toLowerCase().includes(s);
+      return ipMatch || methodMatch;
+    })
   );
 </script>
 
@@ -20,67 +24,126 @@
       <div class="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-500/20">
         <Activity size={24} />
       </div>
-      <h1 class="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Live Traffic Monitor</h1>
+      <div>
+        <h1 class="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">System Monitor</h1>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Deep Packet Inspection Logs</p>
+      </div>
     </div>
 
     <div class="relative w-full md:w-96">
       <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
       <input 
         bind:value={searchTerm}
-        placeholder="Cari IP atau Protokol..." 
-        class="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white"
+        placeholder="Filter IP or Protocol..." 
+        class="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white font-bold text-sm"
       />
     </div>
   </div>
 
-  <div class="bg-slate-900 rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl">
-    <div class="p-4 border-b border-slate-800 bg-slate-800/50 flex items-center gap-2">
-      <div class="flex gap-1.5">
-        <div class="w-3 h-3 rounded-full bg-red-500"></div>
-        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+  <div class="bg-slate-950 rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl">
+    <div class="p-4 border-b border-slate-800 bg-slate-900/80 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <div class="flex gap-1.5">
+          <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500"></div>
+        </div>
+        <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 font-mono">NFStream-Capture-Output</span>
       </div>
-      <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Console Output: Interface-Mirroring</span>
+      <div class="flex gap-4">
+        <span class="text-[10px] font-bold text-blue-500 uppercase">Buffer: {filteredLogs.length} Entries</span>
+      </div>
     </div>
 
-    <div class="p-2 h-[600px] overflow-y-auto font-mono text-sm">
-      <table class="w-full border-collapse">
-        <thead class="text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-800/50">
+    <div class="overflow-x-auto h-[650px] overflow-y-auto custom-scrollbar">
+      <table class="w-full border-collapse font-mono text-xs">
+        <thead class="sticky top-0 bg-slate-950 text-slate-500 uppercase tracking-widest text-[10px] z-10">
           <tr>
-            <th class="p-4 text-left">Timestamp</th>
-            <th class="p-4 text-left">Source IP</th>
-            <th class="p-4 text-left">Method</th>
-            <th class="p-4 text-left">AI Score</th>
-            <th class="p-4 text-right">Action</th>
+            <th class="p-4 text-left border-b border-slate-800">Event Time</th>
+            <th class="p-4 text-left border-b border-slate-800">Type</th>
+            <th class="p-4 text-left border-b border-slate-800">Src Address</th>
+            <th class="p-4 text-left border-b border-slate-800">Method</th>
+            <th class="p-4 text-left border-b border-slate-800">Confidence</th>
+            <th class="p-4 text-right border-b border-slate-800">IPS Action</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-800/30">
-          {#each filteredLogs.slice(0, 30) as log (log.id)}
-            <tr class="hover:bg-white/5 transition-colors">
-              <td class="p-4 text-slate-500 text-xs">{new Date().toLocaleTimeString()}</td>
-              <td class="p-4 text-blue-400 font-bold">{log.ip}</td>
+        <tbody class="divide-y divide-slate-900">
+          {#each filteredLogs as log (`${log.type}-${log.id}`)}
+            {@const isFlow = log.type === 'FLOW'}
+            {@const isVoting = log.type === 'VOTING'}
+            {@const conf = isFlow ? (log.confidence ?? 0) : (log.avg_confidence ?? 0)}
+            {@const isDanger = isFlow ? log.status === 'Judol' : log.is_blocked}
+
+            <tr transition:slide={{duration: 150}} class="hover:bg-white/[0.03] transition-colors group">
+              <td class="p-4 text-slate-600 whitespace-nowrap">
+                {log.timestamp ? new Date(log.timestamp).toLocaleTimeString('en-GB') : '--:--:--'}
+              </td>
+              
               <td class="p-4">
-                <span class="px-2 py-1 bg-slate-800 text-slate-300 rounded text-[10px] border border-slate-700">
-                  {log.method}
+                {#if isVoting}
+                  <span class="text-amber-500 font-black">[VOTE]</span>
+                {:else}
+                  <span class="text-blue-500/60">[FLOW]</span>
+                {/if}
+              </td>
+
+              <td class="p-4 font-bold {isDanger ? 'text-red-400' : 'text-slate-300'}">
+                {log.ip}
+              </td>
+
+              <td class="p-4">
+                <span class="text-slate-500">
+                  {isFlow ? (log.method ?? 'TCP') : (log.final_method ?? 'UDP')}
                 </span>
               </td>
+
               <td class="p-4">
-                <div class="flex items-center gap-2">
-                  <div class="w-12 h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div class="h-full {log.status === 'Judol' ? 'bg-red-500' : 'bg-green-500'}" style="width: {log.confidence * 100}%"></div>
+                <div class="flex items-center gap-3">
+                  <div class="w-16 h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full {isDanger ? 'bg-red-500' : 'bg-green-500'}" 
+                         style="width: {conf * 100}%"></div>
                   </div>
-                  <span class="text-[10px] {log.status === 'Judol' ? 'text-red-400' : 'text-green-400'}">{(log.confidence * 100).toFixed(0)}%</span>
+                  <span class="{isDanger ? 'text-red-400' : 'text-slate-500'}">{(conf * 100).toFixed(0)}%</span>
                 </div>
               </td>
+
               <td class="p-4 text-right">
-                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {log.status === 'Judol' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-green-500/10 text-green-500 border border-green-500/20'}">
-                  {log.status === 'Judol' ? 'Blocked' : 'Passed'}
-                </span>
+                {#if isVoting}
+                  <div class="inline-flex items-center gap-2 {log.is_blocked ? 'text-red-500' : 'text-green-500'} font-black">
+                    {log.action?.toUpperCase() ?? (log.is_blocked ? 'BLOCKED' : 'PASSED')}
+                    {#if log.is_blocked}<Lock size={12}/>{:else}<ShieldCheck size={12}/>{/if}
+                  </div>
+                {:else}
+                  <div class="inline-flex items-center gap-2 {log.status === 'Judol' ? 'text-amber-500' : 'text-slate-600'}">
+                    {log.status === 'Judol' ? 'SUSPECTED' : 'MONITORING'}
+                    {#if log.status === 'Judol'}<Zap size={12} class="animate-pulse"/>{/if}
+                  </div>
+                {/if}
               </td>
             </tr>
           {/each}
         </tbody>
       </table>
+      
+      {#if filteredLogs.length === 0}
+        <div class="flex flex-col items-center justify-center p-20 text-slate-600">
+          <Info size={40} class="mb-4 opacity-20" />
+          <p class="uppercase tracking-[0.2em] text-[10px] font-black">No matching logs in current buffer</p>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #020617;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 10px;
+  }
+</style>
