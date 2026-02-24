@@ -2,17 +2,18 @@ export type LogType = 'FLOW' | 'VOTING'
 
 export interface TrafficLog {
     id: number;
-    type: LogType;
-    timestamp: string;
+    type: LogType;    
     ip: string;
     
     // Properti untuk Type FLOW (Real-Time)
     status?: string;
     method?: string;
     confidence?: number;
+    log_time?: string;
     latent_coords?: [number, number];
 
     // Properti untuk Type VOTING (Result per 3 menit)
+    vote_time?: string;
     final_label?: string;
     final_method?: string;
     avg_confidence?: number;

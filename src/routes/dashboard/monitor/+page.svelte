@@ -76,7 +76,13 @@
 
             <tr transition:slide={{duration: 150}} class="hover:bg-white/[0.03] transition-colors group">
               <td class="p-4 text-slate-600 whitespace-nowrap">
-                {log.timestamp ? new Date(log.timestamp).toLocaleTimeString('en-GB') : '--:--:--'}
+                {(() => {
+                  const rawTime = log.vote_time || log.log_time
+                  if (!rawTime) return '--:--:--'
+
+                  const dateObj = new Date(rawTime)
+                  return isNaN(dateObj.getTime()) ?  '--:--:--' : dateObj.toLocaleDateString('en-GB')
+                })()}
               </td>
               
               <td class="p-4">
