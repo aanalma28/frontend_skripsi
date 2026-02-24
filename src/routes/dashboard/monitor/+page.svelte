@@ -5,14 +5,13 @@
 
   let searchTerm = $state('');
   
-  // Filter log yang cerdas: Cek IP, method (flow), atau final_method (voting)
+  // Filter log: Pastikan handle null/undefined pada method
   let filteredLogs = $derived(
     $trafficLogs.filter(log => {
       const s = searchTerm.toLowerCase();
-      const ipMatch = log.ip.includes(s);
-      const methodMatch = log.type === 'FLOW' 
-        ? log.method?.toLowerCase().includes(s) 
-        : log.final_method?.toLowerCase().includes(s);
+      const ipMatch = log.ip?.includes(s) ?? false;
+      const method = (log.type === 'FLOW' ? log.method : log.final_method) || '';
+      const methodMatch = method.toLowerCase().includes(s);
       return ipMatch || methodMatch;
     })
   );
@@ -71,58 +70,58 @@
           {#each filteredLogs as log (`${log.type}-${log.id}`)}
             {@const isFlow = log.type === 'FLOW'}
             {@const isVoting = log.type === 'VOTING'}
+            
             {@const conf = isFlow ? (log.confidence ?? 0) : (log.avg_confidence ?? 0)}
-            {@const isDanger = isFlow ? log.status === 'Judol' : log.is_blocked}
+            
+            {@const isDanger = isFlow 
+              ? (log.status === 'Suspected' || log.status === 'Judol') 
+              : (log.final_label === 'Judol')}
 
             <tr transition:slide={{duration: 150}} class="hover:bg-white/[0.03] transition-colors group">
-              <td class="p-4 text-slate-600 whitespace-nowrap">
-                {(() => {
-                  const rawTime = log.vote_time || log.log_time
-                  if (!rawTime) return '--:--:--'
-
-                  const dateObj = new Date(rawTime)
-                  return isNaN(dateObj.getTime()) ?  '--:--:--' : dateObj.toLocaleDateString('en-GB')
-                })()}
+              <td class="p-4 text-slate-600 whitespace-nowrap font-mono">
+                {new Date(log.timestamp).toLocaleTimeString('en-GB')}
               </td>
               
               <td class="p-4">
                 {#if isVoting}
-                  <span class="text-amber-500 font-black">[VOTE]</span>
+                  <span class="text-amber-500 font-black px-2 py-0.5 bg-amber-500/10 rounded border border-amber-500/20 text-[9px]">VOTE</span>
                 {:else}
-                  <span class="text-blue-500/60">[FLOW]</span>
+                  <span class="text-blue-500/60 font-bold text-[9px]">FLOW</span>
                 {/if}
               </td>
 
-              <td class="p-4 font-bold {isDanger ? 'text-red-400' : 'text-slate-300'}">
+              <td class="p-4 font-bold {isDanger ? (isFlow ? 'text-amber-400' : 'text-red-400') : 'text-slate-300'}">
                 {log.ip}
               </td>
 
               <td class="p-4">
                 <span class="text-slate-500">
-                  {isFlow ? (log.method ?? 'TCP') : (log.final_method ?? 'UDP')}
+                  {isFlow ? (log.method ?? 'HTTPS') : (log.final_method ?? 'DoH')}
                 </span>
               </td>
 
               <td class="p-4">
                 <div class="flex items-center gap-3">
                   <div class="w-16 h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div class="h-full {isDanger ? 'bg-red-500' : 'bg-green-500'}" 
-                         style="width: {conf * 100}%"></div>
+                    <div class="h-full {isDanger ? (isFlow ? 'bg-amber-500' : 'bg-red-500') : 'bg-green-500'}" 
+                        style="width: {conf * 100}%"></div>
                   </div>
-                  <span class="{isDanger ? 'text-red-400' : 'text-slate-500'}">{(conf * 100).toFixed(0)}%</span>
+                  <span class="{isDanger ? (isFlow ? 'text-amber-400' : 'text-red-400') : 'text-slate-500'}">
+                    {(conf * 100).toFixed(0)}%
+                  </span>
                 </div>
               </td>
 
               <td class="p-4 text-right">
                 {#if isVoting}
-                  <div class="inline-flex items-center gap-2 {log.is_blocked ? 'text-red-500' : 'text-green-500'} font-black">
-                    {log.action?.toUpperCase() ?? (log.is_blocked ? 'BLOCKED' : 'PASSED')}
-                    {#if log.is_blocked}<Lock size={12}/>{:else}<ShieldCheck size={12}/>{/if}
+                  <div class="inline-flex items-center gap-2 {log.final_label === 'Judol' ? 'text-red-500' : 'text-green-500'} font-black text-[10px]">
+                    {log.final_label === 'Judol' ? 'BLOCKED' : 'PASSED'}
+                    {#if log.final_label === 'Judol'}<Lock size={12}/>{:else}<ShieldCheck size={12}/>{/if}
                   </div>
                 {:else}
-                  <div class="inline-flex items-center gap-2 {log.status === 'Judol' ? 'text-amber-500' : 'text-slate-600'}">
-                    {log.status === 'Judol' ? 'SUSPECTED' : 'MONITORING'}
-                    {#if log.status === 'Judol'}<Zap size={12} class="animate-pulse"/>{/if}
+                  <div class="inline-flex items-center gap-2 {isDanger ? 'text-amber-500 font-black' : 'text-slate-600'} text-[10px]">
+                    {isDanger ? 'SUSPECTED' : 'CLEAN'}
+                    {#if isDanger}<Zap size={12} class="animate-pulse"/>{/if}
                   </div>
                 {/if}
               </td>

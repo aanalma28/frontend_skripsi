@@ -1,18 +1,28 @@
 <script>
   import { getContext } from 'svelte';
-  const { xScale, height, padding } = getContext('LayerCake');
-
-  export let ticks = 5; // Jumlah angka label yang muncul
+  const { xScale, height } = getContext('LayerCake');
+  export let ticks = 11; 
 </script>
 
 <g class="axis x-axis">
   {#each $xScale.ticks(ticks) as tick}
     <g class="tick" transform="translate({$xScale(tick)}, 0)">
-      <line y1="0" y2={$height} stroke="rgba(148, 163, 184, 0.1)" stroke-dasharray="4" />
-      <text y={$height + 20} text-anchor="middle" class="fill-slate-400 text-[10px] font-bold">
+      <line 
+        y1="0" 
+        y2={$height} 
+        stroke="currentColor" 
+        class="text-slate-200 dark:text-slate-800" 
+        stroke-dasharray="4"
+        stroke-opacity="0.5" 
+      />
+      <text 
+        y={$height + 25} 
+        text-anchor="middle" 
+        class="fill-slate-400 text-[9px] font-mono font-bold"
+      >
         {tick}
       </text>
     </g>
   {/each}
-  <line x1="0" x2={$xScale.range()[1]} y1={$height} y2={$height} stroke="#e2e8f0" />
+  <line x1="0" x2={$xScale.range()[1]} y1={$height} y2={$height} stroke="#334155" stroke-width="2" />
 </g>

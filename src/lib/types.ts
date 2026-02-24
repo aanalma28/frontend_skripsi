@@ -4,12 +4,12 @@ export interface TrafficLog {
     id: number;
     type: LogType;    
     ip: string;
+    timestamp: string;
     
     // Properti untuk Type FLOW (Real-Time)
     status?: string;
     method?: string;
-    confidence?: number;
-    log_time?: string;
+    confidence?: number;    
     latent_coords?: [number, number];
 
     // Properti untuk Type VOTING (Result per 3 menit)
