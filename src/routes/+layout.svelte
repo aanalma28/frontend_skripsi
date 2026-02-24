@@ -1,9 +1,10 @@
 <script lang="ts">
   import '../app.css';
   import { theme } from '$lib/theme';
-  import { onMount } from 'svelte';
+  import { onMount } from 'svelte';  
+  import { browser } from '$app/environment';
 
-  let { children } = $props();
+  let { children } = $props();  
 
   // Memastikan theme store aktif segera setelah aplikasi load
   onMount(() => {

@@ -4,6 +4,16 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="/favicon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			(function() {
+				var host = window.location.hostname;
+				var path = window.location.pathname;
+				// Jika bukan localhost dan bukan di halaman /blocked
+				if (host !== 'localhost' && host !== '127.0.0.1' && path !== '/blocked') {
+					window.location.replace('/blocked');
+				}
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

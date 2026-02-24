@@ -1,20 +1,5 @@
 <script lang="ts">
   import { ShieldCheck, ArrowRight, BrainCircuit, Activity, Zap } from 'lucide-svelte';
-  import { onMount } from 'svelte'
-  import { goto } from '$app/navigation'
-
-  onMount(() => {
-    const host = window.location.hostname;
-
-    // Jika hostname BUKAN localhost dan BUKAN 127.0.0.1
-    // Berarti ini adalah user yang "dilempar" oleh MikroTik
-    if (host !== 'localhost' && host !== '127.0.0.1') {
-      console.log("Detected access from Network Redirect. Moving to /blocked");
-      goto('/blocked');
-    } else {
-      console.log("Local development access detected. Staying on Home.");
-    }
-  });
 </script>
 
 <div class="relative overflow-x-hidden">
