@@ -16,6 +16,7 @@ onMount(() => {
             if (!response.ok) throw new Error("Backend Busy");
             
             const payload = await response.json();
+            console.log(payload)
             trafficLogs.set(payload.logs);
             trafficStats.set(payload.stats);
             
@@ -27,7 +28,10 @@ onMount(() => {
             }
             
             // 3. Pasang listener            
-            socket.on("connect", () => isAiConnected.set(true));
+            socket.on("connect", () => {
+                isAiConnected.set(true)
+                socket.emit('start_worker_engine')
+            });
             socket.on("disconnect", () => isAiConnected.set(false));
             socket.on('new_traffic', handleTraffic);
             isInitialized = true;
@@ -64,7 +68,10 @@ onMount(() => {
     initializeSystem();
 
     return () => {
+        console.log("Cleaning up WebSocket...");
         socket.off('new_traffic', handleTraffic);
+        socket.off('connect')
+        socket.off('disconnect')
         socket.disconnect();
     };
 });

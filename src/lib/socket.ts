@@ -4,6 +4,9 @@ import type { TrafficLog, TrafficStats } from "./types";
 
 // Koneksi ke Flask (Backend AI)
 export const socket: Socket = io("http://localhost:5000", {
+    transports: ["websocket"],
+    upgrade: false,
+    reconnection: true,
     autoConnect: false
 });
 
