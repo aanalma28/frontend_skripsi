@@ -14,6 +14,7 @@ export const socket: Socket = io("http://localhost:5000", {
 export const trafficLogs = writable<TrafficLog[]>([]);
 export const trafficStats = writable<TrafficStats>({
     total_analyzed: 0,
-    judol_detected: 0
+    judol_detected: 0,
+    current_queue: 0
 })
 export const isAiConnected = writable<boolean>(false);

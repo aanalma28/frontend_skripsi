@@ -1,6 +1,7 @@
 <script lang="ts">  
   import { trafficLogs, trafficStats, isAiConnected } from '$lib/socket';
   import { ShieldAlert, Activity, ShieldCheck, BrainCircuit, Zap, Lock } from 'lucide-svelte';
+  import Monitoring from '$lib/components/Monitoring.svelte'
   import { fade, slide } from 'svelte/transition';    
 </script>
 
@@ -25,8 +26,13 @@
       </div>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white dark:bg-slate-900 p-7 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+  
+      <div class="lg:col-span-2">
+        <Monitoring />
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-7 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 transition-all hover:shadow-md">
         <div class="flex justify-between items-start">
           <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 dark:text-blue-400">
             <Activity size={24} />
@@ -37,7 +43,7 @@
         <h3 class="text-4xl font-black mt-1 text-slate-800 dark:text-white">{$trafficStats.total_analyzed.toLocaleString()}</h3>
       </div>
 
-      <div class="relative overflow-hidden bg-white dark:bg-slate-900 p-7 rounded-[2rem] shadow-sm border border-red-100 dark:border-red-900/20">
+      <div class="relative overflow-hidden bg-white dark:bg-slate-900 p-7 rounded-[2rem] shadow-sm border border-red-100 dark:border-red-900/20 transition-all hover:shadow-md">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-red-500/10 blur-3xl"></div>
         <div class="flex justify-between items-start">
           <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-2xl text-red-600 dark:text-red-400">
@@ -49,15 +55,21 @@
         <h3 class="text-4xl font-black mt-1 text-red-600 dark:text-red-500">{$trafficStats.judol_detected.toLocaleString()}</h3>
       </div>
 
-      <div class="bg-white dark:bg-slate-900 p-7 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 transition-all">
-        <div class="flex justify-between items-start">
+      <div class="lg:col-span-4 bg-white dark:bg-slate-900 p-5 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-between px-10">
+        <div class="flex items-center gap-4">
           <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-2xl text-purple-600 dark:text-purple-400">
             <BrainCircuit size={24} />
           </div>
+          <div>
+            <p class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">Inference Engine Status</p>
+            <h3 class="text-xl font-black text-slate-800 dark:text-white uppercase italic">Variational Autoencoder + Deep Neural Network</h3>
+          </div>
         </div>
-        <p class="text-slate-500 dark:text-slate-400 text-sm font-bold mt-6 uppercase tracking-widest">Inference Core</p>
-        <h3 class="text-xl font-black mt-2 text-slate-800 dark:text-white uppercase italic">Beta-VAE + DNN</h3>
+        <div class="hidden md:block">
+            <span class="text-[10px] font-black border border-purple-200 dark:border-purple-800 text-purple-500 px-3 py-1 rounded-full uppercase">Combined Model</span>
+        </div>
       </div>
+
     </div>
 
     <section class="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">

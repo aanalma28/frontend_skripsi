@@ -42,7 +42,7 @@ onMount(() => {
         }
     }
 
-    const handleTraffic = (payload: {type: LogType, data: any, stats: any}) => {
+    const handleTraffic = (payload: {type: LogType, data: any, stats: TrafficStats}) => {
         // Gabungkan type kedalam object data agar store konsisten
         const newLogEntry: TrafficLog = {
             ...payload.data,
@@ -56,7 +56,11 @@ onMount(() => {
         })
 
         if(payload.stats){
-            trafficStats.set(payload.stats);
+            trafficStats.set({
+                total_analyzed: payload.stats.total_analyzed,
+                judol_detected: payload.stats.judol_detected,
+                current_queue: payload.stats.current_queue
+            });
         }
 
         // Console log untuk debugging pas demo (opsional)

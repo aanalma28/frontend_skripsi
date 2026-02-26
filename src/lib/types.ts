@@ -27,4 +27,5 @@ export interface TrafficLog {
 export interface TrafficStats {
     total_analyzed: number;
     judol_detected: number;
+    current_queue: number;
 }
