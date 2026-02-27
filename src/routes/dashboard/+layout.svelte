@@ -28,10 +28,7 @@ onMount(() => {
             }
             
             // 3. Pasang listener            
-            socket.on("connect", () => {
-                isAiConnected.set(true)
-                socket.emit('start_worker_engine')
-            });
+            socket.on("connect", () => isAiConnected.set(true));
             socket.on("disconnect", () => isAiConnected.set(false));
             socket.on('new_traffic', handleTraffic);
             isInitialized = true;
