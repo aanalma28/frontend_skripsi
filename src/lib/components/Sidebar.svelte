@@ -1,7 +1,7 @@
 <script lang="ts">
   import { theme } from '$lib/theme';
   import { Sun, Moon, LayoutDashboard, Activity, BrainCircuit, LogOut, ShieldCheck } from 'lucide-svelte';
-  import { page } from '$app/stores';
+  import { page } from '$app/stores';  
 
   // Svelte 5 merekomendasikan deklarasi menu tetap konstan
   const menus = [
@@ -31,7 +31,8 @@
   </div>
 
   <nav class="flex-1 px-4 space-y-2">
-    {#each menus as menu}
+    {#each menus as menu (menu.path)}
+    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
       <a 
         href={menu.path}
         class="flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold transition-all duration-200 group
@@ -63,9 +64,9 @@
       <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Admin Node</p>
       <p class="text-sm font-black text-slate-700 dark:text-slate-200 truncate mt-0.5">Administrator</p>
     </div>
-    
+    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
     <a 
-      href="/login" 
+      href='/login'
       class="flex items-center gap-4 px-5 py-3 text-red-500/70 hover:text-red-500 font-bold transition-colors group"
     >
       <LogOut size={20} class="group-hover:-translate-x-1 transition-transform" />

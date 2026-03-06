@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { ShieldAlert, Globe, Lock, Activity, ArrowLeft } from 'lucide-svelte';
-  import { fade, scale } from 'svelte/transition';
+  import { ShieldAlert, Globe, Lock, Activity } from 'lucide-svelte';
+  import { scale } from 'svelte/transition';
 
   let userIp = $state('Detecting...');
   let timestamp = new Date().toLocaleString();
@@ -9,7 +9,7 @@
   onMount(() => {
     // Ambil IP dari URL params jika kamu mengirimkannya lewat redirect MikroTik
     const params = new URLSearchParams(window.location.search);
-    userIp = params.get('ip') || '192.168.50.x'; 
+    userIp = params.get('ip') || '192.168.50.x';
   });
 </script>
 

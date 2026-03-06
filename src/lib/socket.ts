@@ -7,6 +7,8 @@ export const socket: Socket = io("http://localhost:5000", {
     transports: ["websocket"],
     upgrade: false,
     reconnection: true,
+    reconnectionAttempts: 5,
+    timeout: 10000,
     autoConnect: false
 });
 

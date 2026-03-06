@@ -74,8 +74,8 @@
           data={chartData}
           x="x"
           y="y"
-          xDomain={[-15, 15]}
-          yDomain={[-15, 15]}
+          xDomain={[-50, 50]}
+          yDomain={[-50, 50]}
           padding={{ top: 20, right: 20, bottom: 50, left: 60 }}
         >
           <Svg>

@@ -1,8 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import { theme } from '$lib/theme';
-  import { onMount } from 'svelte';  
-  import { browser } from '$app/environment';
+  import { onMount } from 'svelte';    
 
   let { children } = $props();  
 

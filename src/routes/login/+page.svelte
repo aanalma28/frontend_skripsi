@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto } from '$app/navigation';  
   let email = '';
   let password = '';
-
-  const handleLogin = () => {
+  
+  const handleLogin = async (): Promise<void> => {
     // Implementasi auth sederhana
     if (email === "admin@local.com") {
-      goto('/dashboard');
+      // eslint-disable-next-line svelte/no-navigation-without-resolve
+      await goto('/dashboard');
     }
   };
 </script>

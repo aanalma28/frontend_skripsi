@@ -1,13 +1,12 @@
 <script lang="ts">
-  import Sidebar from '$lib/components/Sidebar.svelte';
-  import { onMount } from 'svelte'
-  import type { TrafficLog, TrafficStats, LogType } from '$lib/types';
-  import { trafficLogs, trafficStats, isAiConnected, socket } from '$lib/socket';
+import Sidebar from '$lib/components/Sidebar.svelte';
+import { onMount } from 'svelte'
+import type { TrafficLog, TrafficStats, LogType } from '$lib/types';
+import { trafficLogs, trafficStats, isAiConnected, socket } from '$lib/socket';
 
-  let { children } = $props();
+let { children } = $props();
 
 onMount(() => {
-    let isInitialized = false;
 
     async function initializeSystem() {
         try {
@@ -18,8 +17,7 @@ onMount(() => {
             const payload = await response.json();
             console.log(payload)
             trafficLogs.set(payload.logs);
-            trafficStats.set(payload.stats);
-            
+            trafficStats.set(payload.stats);            
             console.log("✅ Initial Data Synced. Starting WebSocket...");
             
             // 2. SETELAH initial data beres, baru aktifkan Socket
@@ -30,16 +28,15 @@ onMount(() => {
             // 3. Pasang listener            
             socket.on("connect", () => isAiConnected.set(true));
             socket.on("disconnect", () => isAiConnected.set(false));
-            socket.on('new_traffic', handleTraffic);
-            isInitialized = true;
+            socket.on('new_traffic', handleTraffic);            
 
         } catch (err) {
             console.error("❌ Sync failed, retrying in 3s...", err);
             setTimeout(initializeSystem, 3000); // Retry terus
         }
     }
-
-    const handleTraffic = (payload: {type: LogType, data: any, stats: TrafficStats}) => {
+                
+    const handleTraffic = (payload: {type: LogType, data: TrafficLog, stats: TrafficStats}) => {
         // Gabungkan type kedalam object data agar store konsisten
         const newLogEntry: TrafficLog = {
             ...payload.data,

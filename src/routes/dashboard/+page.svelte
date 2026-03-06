@@ -1,8 +1,7 @@
 <script lang="ts">  
   import { trafficLogs, trafficStats, isAiConnected } from '$lib/socket';
   import { ShieldAlert, Activity, ShieldCheck, BrainCircuit, Zap, Lock } from 'lucide-svelte';
-  import Monitoring from '$lib/components/Monitoring.svelte'
-  import { fade, slide } from 'svelte/transition';    
+  import Monitoring from '$lib/components/Monitoring.svelte'  
 </script>
 
 <div class="min-h-screen w-full bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
@@ -78,7 +77,8 @@
           <h3 class="font-black text-xl text-slate-800 dark:text-white italic">Recent Traffic Flow</h3>
           <p class="text-xs text-slate-400 font-bold uppercase tracking-tighter">Real-time Classification</p>
         </div>
-        <a href="/dashboard/monitor" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-full transition-transform active:scale-95 uppercase tracking-widest">
+        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+        <a href='/dashboard/monitor' class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-full transition-transform active:scale-95 uppercase tracking-widest">
           Full Monitor
         </a>
       </div>
@@ -103,7 +103,7 @@
             {@const confidence = isFlow ? (log.confidence ?? 0) : (log.avg_confidence ?? 0)}
             {@const isJudol = displayStatus === 'Judol' || displayStatus === 'Suspected'}
 
-            <tr transition:slide={{duration: 300}} class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group">
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group">
               <td class="px-8 py-6">
                 <div class="flex flex-col">
                   <span class="font-mono text-sm font-bold text-slate-700 dark:text-slate-300">{log.ip}</span>

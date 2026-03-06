@@ -1,6 +1,6 @@
 <script lang="ts">
   import { trafficLogs } from '$lib/socket';
-  import { Activity, ShieldAlert, ShieldCheck, Search, Zap, Lock, Info } from 'lucide-svelte';
+  import { Activity, ShieldCheck, Search, Zap, Lock, Info } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
 
   let searchTerm = $state('');
