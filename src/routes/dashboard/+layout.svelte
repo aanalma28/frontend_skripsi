@@ -46,7 +46,7 @@ onMount(() => {
 
         trafficLogs.update(currentLogs => {
             const updated = [newLogEntry, ...currentLogs]
-            return updated.slice(0,50)
+            return updated.slice(0,1000)
         })
 
         if(payload.stats){

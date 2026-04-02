@@ -13,7 +13,7 @@
       const method = (log.type === 'FLOW' ? log.method : log.final_method) || '';
       const methodMatch = method.toLowerCase().includes(s);
       return ipMatch || methodMatch;
-    })
+    }).slice(0,50)
   );
 </script>
 
