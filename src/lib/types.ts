@@ -1,4 +1,4 @@
-export type LogType = 'FLOW' | 'VOTING'
+export type LogType = 'FLOW' | 'DECISION';
 
 export interface TrafficLog {
     id: number;
@@ -13,7 +13,7 @@ export interface TrafficLog {
     latent_coords?: [number, number];
 
     // Properti untuk Type VOTING (Result per 3 menit)
-    vote_time?: string;
+    decision_time?: string;
     final_label?: string;
     final_method?: string;
     avg_confidence?: number;

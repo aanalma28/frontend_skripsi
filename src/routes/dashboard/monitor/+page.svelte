@@ -69,13 +69,13 @@
         <tbody class="divide-y divide-slate-900">
           {#each filteredLogs as log (`${log.type}-${log.id}`)}
             {@const isFlow = log.type === 'FLOW'}
-            {@const isVoting = log.type === 'VOTING'}
+            {@const isVoting = log.type === 'DECISION'}
             
             {@const conf = isFlow ? (log.confidence ?? 0) : (log.avg_confidence ?? 0)}
             
             {@const isDanger = isFlow 
               ? (log.status === 'Suspected' || log.status === 'Judol') 
-              : (log.final_label === 'Judol')}
+              : (log.is_blocked)}
 
             <tr transition:slide={{duration: 150}} class="hover:bg-white/[0.03] transition-colors group">
               <td class="p-4 text-slate-600 whitespace-nowrap font-mono">
@@ -114,9 +114,9 @@
 
               <td class="p-4 text-right">
                 {#if isVoting}
-                  <div class="inline-flex items-center gap-2 {log.final_label === 'Judol' ? 'text-red-500' : 'text-green-500'} font-black text-[10px]">
-                    {log.final_label === 'Judol' ? 'BLOCKED' : 'PASSED'}
-                    {#if log.final_label === 'Judol'}<Lock size={12}/>{:else}<ShieldCheck size={12}/>{/if}
+                  <div class="inline-flex items-center gap-2 {log.is_blocked ? 'text-red-500' : 'text-green-500'} font-black text-[10px]">
+                    {log.is_blocked ? 'BLOCKED' : 'PASSED'}
+                    {#if log.is_blocked}<Lock size={12}/>{:else}<ShieldCheck size={12}/>{/if}
                   </div>
                 {:else}
                   <div class="inline-flex items-center gap-2 {isDanger ? 'text-amber-500 font-black' : 'text-slate-600'} text-[10px]">

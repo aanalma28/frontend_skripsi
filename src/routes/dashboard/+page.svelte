@@ -96,10 +96,10 @@
           <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
           {#each $trafficLogs.slice(0, 8) as log (`${log.type}-${log.id}`)}
             {@const isFlow = log.type === 'FLOW'}
-            {@const isVoting = log.type === 'VOTING'}
+            {@const isVoting = log.type === 'DECISION'}
             
             {@const displayMethod = isFlow ? (log.method ?? 'None') : (log.final_method ?? 'None')}
-            {@const displayStatus = isFlow ? (log.status ?? 'Normal') : (log.final_label ?? 'Normal')}
+            {@const displayStatus = isFlow ? (log.status ?? 'Normal') : 'Normal'}
             {@const confidence = isFlow ? (log.confidence ?? 0) : (log.avg_confidence ?? 0)}
             {@const isJudol = displayStatus === 'Judol' || displayStatus === 'Suspected'}
 

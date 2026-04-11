@@ -57,10 +57,10 @@ onMount(() => {
             });
         }
 
-        // Console log untuk debugging pas demo (opsional)
-        if (payload.type === 'VOTING') {
-            console.warn(`⚠️ [VOTING] IP ${payload.data.ip} virdict: ${payload.data.final_label}`);
-        }
+        // // Console log untuk debugging pas demo (opsional)
+        // if (payload.type === 'VOTING') {
+        //     console.warn(`⚠️ [VOTING] IP ${payload.data.ip} virdict: ${payload.data.final_label}`);
+        // }
     };
 
     initializeSystem();
