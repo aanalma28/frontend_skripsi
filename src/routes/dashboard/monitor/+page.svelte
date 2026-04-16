@@ -10,7 +10,7 @@
     $trafficLogs.filter(log => {
       const s = searchTerm.toLowerCase();
       const ipMatch = log.ip?.includes(s) ?? false;
-      const method = (log.type === 'FLOW' ? log.method : log.final_method) || '';
+      const method = (log.type === 'FLOW' ? log.method : '') || '';
       const methodMatch = method.toLowerCase().includes(s);
       return ipMatch || methodMatch;
     }).slice(0,50)
@@ -69,9 +69,9 @@
         <tbody class="divide-y divide-slate-900">
           {#each filteredLogs as log (`${log.type}-${log.id}`)}
             {@const isFlow = log.type === 'FLOW'}
-            {@const isVoting = log.type === 'DECISION'}
+            {@const isVoting = log.type === 'PENALTY'}
             
-            {@const conf = isFlow ? (log.confidence ?? 0) : (log.avg_confidence ?? 0)}
+            {@const conf = isFlow ? (log.confidence ?? 0) : 0}
             
             {@const isDanger = isFlow 
               ? (log.status === 'Suspected' || log.status === 'Judol') 
@@ -96,7 +96,7 @@
 
               <td class="p-4">
                 <span class="text-slate-500">
-                  {isFlow ? (log.method ?? 'HTTPS') : (log.final_method ?? 'DoH')}
+                  {log.method ?? 'N/A'}
                 </span>
               </td>
 

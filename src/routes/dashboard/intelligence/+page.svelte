@@ -2,7 +2,7 @@
   import { fade } from 'svelte/transition';
   import { LayerCake, Svg } from 'layercake';
   import { trafficLogs } from '$lib/socket';
-  import { BrainCircuit, Info, Crosshair, Zap, Activity } from 'lucide-svelte';
+  import { BrainCircuit, Info, Crosshair, Activity } from 'lucide-svelte';
   
   import Scatter from '$lib/components/Scatter.svelte';
   import AxisX from '$lib/components/AxisX.svelte';
@@ -11,7 +11,7 @@
   // Reactive Data
   $: chartData = $trafficLogs.map((log, index) => {
     const isFlow = log.type === 'FLOW';
-    const coords = isFlow ? log.latent_coords : log.centroid;
+    const coords = isFlow ? log.latent_coords : null;
     
     if (!coords || !Array.isArray(coords) || coords.length < 2) return null;
 
@@ -31,7 +31,7 @@
       type: log.type,
       color: pointColor
     };
-  }).filter(d => d !== null);
+  }).filter(d => d !== null).slice(0, 50); // Batasi untuk performa
 
   $: latestFlow = [...$trafficLogs].reverse().find(l => l.type === 'FLOW');
   $: latestCoords = latestFlow?.latent_coords ?? [0, 0];
@@ -59,11 +59,7 @@
       <div class="flex items-center gap-2 border-l border-slate-300 dark:border-slate-600 pl-4">
         <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
         <span class="text-[10px] font-black text-slate-500 uppercase">Judol Pattern</span>
-      </div>
-      <div class="flex items-center gap-2 border-l border-slate-300 dark:border-slate-600 pl-4">
-        <Zap size={12} class="text-amber-500" />
-        <span class="text-[10px] font-black text-slate-500 uppercase">Decision</span>
-      </div>
+      </div>      
     </div>
   </div>
 
@@ -74,8 +70,8 @@
           data={chartData}
           x="x"
           y="y"
-          xDomain={[-50, 50]}
-          yDomain={[-50, 50]}
+          xDomain={[-2, 2]}
+          yDomain={[-2, 2]}
           padding={{ top: 20, right: 20, bottom: 50, left: 60 }}
         >
           <Svg>

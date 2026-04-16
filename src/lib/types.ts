@@ -1,24 +1,19 @@
-export type LogType = 'FLOW' | 'DECISION';
+export type LogType = 'FLOW' | 'PENALTY';
 
 export interface TrafficLog {
     id: number;
     type: LogType;    
     ip: string;
     timestamp: string;
+    penalty_score: number;
+    confidence: number;
+    latent_coords: [number, number];
     
     // Properti untuk Type FLOW (Real-Time)
     status?: string;
-    method?: string;
-    confidence?: number;    
-    latent_coords?: [number, number];
+    method?: string; 
 
-    // Properti untuk Type VOTING (Result per 3 menit)
-    decision_time?: string;
-    final_label?: string;
-    final_method?: string;
-    avg_confidence?: number;
-    violation_rate?: string;
-    centroid?: [number, number];
+    // Properti untuk Type PENALTY    
     is_blocked?: boolean;
     action?: string;
 

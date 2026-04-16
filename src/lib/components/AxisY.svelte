@@ -5,7 +5,7 @@
 </script>
 
 <g class="axis y-axis">
-  {#each $yScale.ticks(ticks) as tick}
+  {#each $yScale.ticks(ticks) as tick (tick)}
     <g class="tick" transform="translate(0, {$yScale(tick)})">
       <line 
         x1="0" 

@@ -9,12 +9,12 @@
     <circle
       cx={$xGet(d)}
       cy={$yGet(d)}
-      r={d.type === 'VOTING' ? 10 : 5} 
+      r={d.type === 'PENALTY' ? 10 : 5} 
       fill={d.color} 
       stroke="white"
-      stroke-width={d.type === 'VOTING' ? 3 : 1}
-      class="transition-all duration-500 {d.type === 'VOTING' ? 'animate-pulse' : ''}"
-      opacity={d.type === 'VOTING' ? 1 : 0.7}
+      stroke-width={d.type === 'PENALTY' ? 3 : 1}
+      class="transition-all duration-500 {d.type === 'PENALTY' ? 'animate-pulse' : ''}"
+      opacity={d.type === 'PENALTY' ? 1 : 0.7}
     />
   {/each}
 </g>

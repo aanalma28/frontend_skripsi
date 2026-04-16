@@ -96,11 +96,11 @@
           <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
           {#each $trafficLogs.slice(0, 8) as log (`${log.type}-${log.id}`)}
             {@const isFlow = log.type === 'FLOW'}
-            {@const isVoting = log.type === 'DECISION'}
+            {@const isVoting = log.type === 'PENALTY'}
             
-            {@const displayMethod = isFlow ? (log.method ?? 'None') : (log.final_method ?? 'None')}
+            {@const displayMethod = log.method ?? 'None'}
             {@const displayStatus = isFlow ? (log.status ?? 'Normal') : 'Normal'}
-            {@const confidence = isFlow ? (log.confidence ?? 0) : (log.avg_confidence ?? 0)}
+            {@const confidence = log.confidence ?? 0}
             {@const isJudol = displayStatus === 'Judol' || displayStatus === 'Suspected'}
 
             <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group">
@@ -141,7 +141,7 @@
                       {#if log.is_blocked} <Lock size={14} /> {:else} <ShieldCheck size={14} /> {/if}
                     </span>
                     <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                      Rate: {log.violation_rate ?? '0/0'} | Avg: {(confidence * 100).toFixed(0)}%
+                      Score: {log.penalty_score.toFixed(2)}
                     </span>
                   {:else}
                     <span class="inline-flex items-center gap-1.5 font-black text-xs uppercase tracking-widest {isJudol ? 'text-amber-500' : 'text-emerald-500'}">
@@ -155,7 +155,10 @@
                     <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
                       AI Confidence: {(confidence * 100).toFixed(0)}%
                     </span>
-                  {/if}
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                      Score: {log.penalty_score.toFixed(2)}
+                    </span>
+                  {/if}                  
                 </div>
               </td>
             </tr>
