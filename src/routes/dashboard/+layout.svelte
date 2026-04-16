@@ -1,8 +1,8 @@
 <script lang="ts">
 import Sidebar from '$lib/components/Sidebar.svelte';
 import { onMount } from 'svelte'
-import type { TrafficLog, TrafficStats, LogType } from '$lib/types';
-import { trafficLogs, trafficStats, isAiConnected, socket } from '$lib/socket';
+import type { TrafficLog, TrafficStats, LogType, PenaltyData, BlockedIP, SystemConfig } from '$lib/types';
+import { trafficLogs, trafficStats, isAiConnected, socket, penaltyStore, blockedStore, systemConfig } from '$lib/socket';
 
 let { children } = $props();
 
@@ -17,7 +17,12 @@ onMount(() => {
             const payload = await response.json();
             console.log(payload)
             trafficLogs.set(payload.logs);
-            trafficStats.set(payload.stats);            
+            trafficStats.set(payload.stats);
+            // cast systemconfig dengan type SystemConfig untuk memastikan konsistensi
+            const configs = payload.configs as SystemConfig;
+            systemConfig.set(configs);
+            blockedStore.set(payload.blocked_ips);
+            penaltyStore.set(payload.penalties);
             console.log("✅ Initial Data Synced. Starting WebSocket...");
             
             // 2. SETELAH initial data beres, baru aktifkan Socket
@@ -28,7 +33,25 @@ onMount(() => {
             // 3. Pasang listener            
             socket.on("connect", () => isAiConnected.set(true));
             socket.on("disconnect", () => isAiConnected.set(false));
-            socket.on('new_traffic', handleTraffic);            
+            socket.on('new_traffic', handleTraffic);
+            
+            // Listener Real-time untuk Angka Penalty
+            socket.on('penalty_update', (payload: PenaltyData) => {
+                penaltyStore.update(current => {
+                    const index = current.findIndex(p => p.ip_address === payload.ip_address);
+                    if (index !== -1) {
+                        current[index] = payload;
+                        return [...current];
+                    }
+                    return [payload, ...current].slice(0, 100);
+                });
+            });
+
+            // Listener Real-time untuk Blokir Baru
+            socket.on('new_block', (payload: BlockedIP) => {
+                blockedStore.update(current => [payload, ...current]);
+                // Logika alert bisa ditambahkan di sini
+            });
 
         } catch (err) {
             console.error("❌ Sync failed, retrying in 3s...", err);

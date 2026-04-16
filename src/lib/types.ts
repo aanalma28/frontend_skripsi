@@ -8,15 +8,40 @@ export interface TrafficLog {
     penalty_score: number;
     confidence: number;
     latent_coords: [number, number];
-    
-    // Properti untuk Type FLOW (Real-Time)
+    method: string;
     status?: string;
-    method?: string; 
-
-    // Properti untuk Type PENALTY    
     is_blocked?: boolean;
     action?: string;
+}
 
+export interface PenaltyData {
+    ip_address: string;
+    penalty_points: number;
+    last_update: string;
+}
+
+export interface BlockedIP {
+    ip_address: string;
+    blocked_at: string;
+    unblocked_at?: string;
+    status: string;
+    reason: string;        // Tambahan baru
+    duration_minutes: number; // Tambahan baru
+}
+
+export interface SystemConfig {
+    block_threshold: number,
+    penalty_heavy_rate: number,
+    penalty_suspect_rate: number,
+    penalty_decay_rate: number,
+    block_duration_minutes: number,
+    mikrotik_api_enabled: boolean,    
+    engine_status: string,
+    port_sniffer_device: string,
+    ip_filter: string,
+    mikrotik_api_host: string,
+    mikrotik_api_username: string,
+    mikrotik_api_password: string
 }
 
 export interface TrafficStats {
