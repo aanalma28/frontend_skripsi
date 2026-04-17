@@ -4,7 +4,7 @@
   import { fade, slide } from 'svelte/transition';
 
   let searchTerm = $state('');
-  let isProcessing = $state(false);
+  let processingIps = $state(new Set());
 
   // Filter pencarian IP
   let filteredBlocked = $derived(
@@ -13,9 +13,10 @@
 
   // Fungsi Aksi: Membuka Blokir Manual
   async function releaseBlock(ip: string) {
+    if (processingIps.has(ip)) return;    
     if (!confirm(`Buka blokir untuk IP ${ip}? Perubahan ini akan langsung diterapkan ke sistem.`)) return;
-    
-    isProcessing = true;
+
+    processingIps.add(ip);
     try {
       const response = await fetch('http://localhost:5000/api/ip/release-block', {
         method: 'POST',
@@ -36,7 +37,7 @@
       console.error("Error release block:", error);
       alert("❌ ERROR: Terjadi kesalahan koneksi ke backend.");
     } finally {
-      isProcessing = false;
+      processingIps.delete(ip); // Unlock
     }
   }
 </script>
@@ -118,12 +119,16 @@
 
               <td class="px-8 py-6 text-right">
                 <button 
-                  onclick={() => releaseBlock(block.ip_address)}
-                  disabled={isProcessing}
-                  class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-50"
+                    onclick={() => releaseBlock(block.ip_address)}
+                    disabled={processingIps.has(block.ip_address)}
+                    class="disabled:opacity-50 disabled:cursor-not-allowed ..."
                 >
-                  <Unlock size={14} />
-                  Release Block
+                    {#if processingIps.has(block.ip_address)}
+                        <span class="animate-spin inline-block mr-2">↻</span> Processing...
+                    {:else}
+                        <Unlock size={14} />
+                        <span>Release Block</span>
+                    {/if}
                 </button>
               </td>
             </tr>

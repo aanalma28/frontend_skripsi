@@ -33,8 +33,9 @@
 
   async function handleSave() {
     if (!validate()) return;
-    
+    if (isSaving) return;    
     isSaving = true;
+    
     try {
       const response = await fetch('http://localhost:5000/api/config/update', {
         method: 'POST',
@@ -50,7 +51,7 @@
       alert("❌ ERROR: Gagal menghubungi server backend.");
       console.error("Error saving config:", err);
     } finally {
-      isSaving = false;
+      setTimeout(() => { isSaving = false; }, 1000);
     }
   }
 
@@ -78,14 +79,14 @@
       </div>
 
       <button 
-        onclick={toggleEngine}
+        onclick={() => {toggleEngine(); handleSave()}} disabled={isSaving}
         class="group relative flex items-center gap-4 px-8 py-4 rounded-3xl transition-all duration-300 font-black uppercase tracking-widest overflow-hidden shadow-lg 
         {$systemConfig.engine_status === 'on' 
             ? 'bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600' 
             : 'bg-red-500 text-white shadow-red-500/20 hover:bg-red-600'}"
         >
         <Power size={20} class={$systemConfig.engine_status === 'on' ? 'animate-pulse' : ''} />
-        <span>Engine {$systemConfig.engine_status.toUpperCase()}</span>
+        <span>{isSaving ? 'Processing...' : `Engine ${$systemConfig.engine_status}`}</span>
       </button>
     </div>
 

@@ -90,7 +90,9 @@ onMount(() => {
 
     return () => {
         console.log("Cleaning up WebSocket...");
-        socket.off('new_traffic', handleTraffic);
+        socket.off('new_traffic', handleTraffic);                
+        socket.off('penalty_update');
+        socket.off('new_block');        
         socket.off('connect')
         socket.off('disconnect')
         socket.disconnect();

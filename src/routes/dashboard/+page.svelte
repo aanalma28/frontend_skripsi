@@ -1,5 +1,5 @@
 <script lang="ts">  
-  import { trafficLogs, trafficStats, isAiConnected } from '$lib/socket';
+  import { trafficLogs, trafficStats, isAiConnected, systemConfig } from '$lib/socket';
   import { ShieldAlert, Activity, ShieldCheck, BrainCircuit, Zap, Lock } from 'lucide-svelte';
   import Monitoring from '$lib/components/Monitoring.svelte'  
 </script>
@@ -19,9 +19,16 @@
       
       <div class="flex items-center gap-3 bg-white dark:bg-slate-900 px-5 py-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
         <div class="w-3 h-3 rounded-full {$isAiConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}"></div>
-        <span class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-          AI Engine: {$isAiConnected ? 'Active' : 'Offline'}
-        </span>
+        
+        <div class="flex flex-col">
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
+            System Node: {$isAiConnected ? 'Online' : 'Offline'}
+          </span>
+          <span class="text-sm font-bold mt-1 uppercase tracking-wider
+            {$systemConfig?.engine_status === 'on' ? 'text-emerald-600' : 'text-red-600'}">
+            AI Engine: {$systemConfig?.engine_status === 'on' ? 'Running' : 'Paused'}
+          </span>
+        </div>
       </div>
     </header>
 
