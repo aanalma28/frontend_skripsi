@@ -10,19 +10,24 @@ onMount(() => {
 
     async function initializeSystem() {
         try {
-            // 1. Coba ambil data awal sampai berhasil
             const response = await fetch("http://localhost:5000/api/initial-data");
             if (!response.ok) throw new Error("Backend Busy");
             
             const payload = await response.json();
-            console.log(payload)
-            trafficLogs.set(payload.logs);
-            trafficStats.set(payload.stats);
-            // cast systemconfig dengan type SystemConfig untuk memastikan konsistensi
+            
+            // SINKRONISASI DATA (Pastikan key sesuai dengan Backend)
+            trafficLogs.set(payload.logs || []);
+            trafficStats.set(payload.stats || { total_analyzed: 0, judol_detected: 0 });
+            
             const configs = payload.configs as SystemConfig;
             systemConfig.set(configs);
-            blockedStore.set(payload.blocked_ips);
-            penaltyStore.set(payload.penalties);
+
+            // Perbaikan: Pastikan fallback array kosong [] jika data null/undefined
+            blockedStore.set(payload.blocked_ips || []);
+            
+            // PERBAIKAN KEY: Backend kirim 'recent_penalties', jangan panggil 'penalties'
+            penaltyStore.set(payload.recent_penalties || []);
+            
             console.log("✅ Initial Data Synced. Starting WebSocket...");
             
             // 2. SETELAH initial data beres, baru aktifkan Socket
@@ -38,7 +43,7 @@ onMount(() => {
             // Listener Real-time untuk Angka Penalty
             socket.on('penalty_update', (payload: PenaltyData) => {
                 penaltyStore.update(current => {
-                    const index = current.findIndex(p => p.ip_address === payload.ip_address);
+                    const index = current.findIndex(p => p.src_ip === payload.src_ip);
                     if (index !== -1) {
                         current[index] = payload;
                         return [...current];

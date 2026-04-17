@@ -32,7 +32,7 @@ export const systemConfig = writable<SystemConfig>({
     block_duration_minutes: 0,
     mikrotik_block_enabled: false,
     engine_status: 'off', // Nilai aman agar UI tidak crash
-    port_sniffer_device: '',
+    interface_dst: '',
     ip_filter: '',
     mikrotik_api_host: '',
     mikrotik_api_username: '',

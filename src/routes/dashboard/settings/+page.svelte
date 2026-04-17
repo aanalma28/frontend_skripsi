@@ -9,22 +9,26 @@
   let isSaving = $state(false);
   let errors: Record<string, string> = $state({});
 
-  // Fungsi Validasi Lokal
+  // 🛡️ REVISI SVELTE 5: Gunakan local state untuk form binding agar stabil
+  // Kita salin data dari store ke state lokal
+  let localConfig = $state({ ...($systemConfig || {}) });
+
+  // Sinkronkan localConfig jika store berubah (misal saat initial fetch selesai)
+  $effect(() => {
+    if ($systemConfig && Object.keys($systemConfig).length > 0) {
+      localConfig = { ...$systemConfig };
+    }
+  });
+
   function validate() {
     const newErrors: Record<string, string> = {};
-    const cfg = $systemConfig;
+    const cfg = localConfig;
 
-    if (!cfg) return false;
-
-    // 1. Validasi Angka
     if (cfg.block_threshold <= 0) newErrors.block_threshold = "Threshold harus positif";
-    if (cfg.penalty_heavy_rate <= 0) newErrors.heavy = "Heavy rate harus > 0";
-    if (cfg.penalty_suspect_rate <= 0) newErrors.suspect = "Suspect rate harus > 0";
     
-    // 2. Validasi Format IP (CIDR)
     const cidrRegex = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
     if (!cidrRegex.test(cfg.ip_filter || '')) {
-      newErrors.ip_filter = "Format IP/CIDR tidak valid (Contoh: 192.168.1.0/24)";
+      newErrors.ip_filter = "Format IP/CIDR tidak valid";
     }
 
     errors = newErrors;
@@ -32,35 +36,32 @@
   }
 
   async function handleSave() {
-    if (!validate()) return;
-    if (isSaving) return;    
+    if (!validate() || isSaving) return;    
     isSaving = true;
     
     try {
       const response = await fetch('http://localhost:5000/api/config/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify($systemConfig)
+        body: JSON.stringify(localConfig) // Kirim data dari state lokal
       });
 
       const result = await response.json();
       if (result.status === 'success') {
+        systemConfig.set(localConfig); // Update store global setelah sukses
         alert("✅ SUCCESS: Konfigurasi Sistem Berhasil Diperbarui!");
       }
     } catch (err) {
-      alert("❌ ERROR: Gagal menghubungi server backend.");
-      console.error("Error saving config:", err);
+      alert("❌ ERROR: Gagal menghubungi server.");
+      console.error("Error updating config:", err);
     } finally {
       setTimeout(() => { isSaving = false; }, 1000);
     }
   }
 
   function toggleEngine() {
-    if (!$systemConfig) return;
-    systemConfig.update(c => ({
-        ...c,
-        engine_status: c.engine_status === 'on' ? 'off' : 'on'
-    }));
+    localConfig.engine_status = localConfig.engine_status === 'on' ? 'off' : 'on';
+    handleSave(); // Langsung simpan saat toggle ditekan
   }
 </script>
 
@@ -79,14 +80,15 @@
       </div>
 
       <button 
-        onclick={() => {toggleEngine(); handleSave()}} disabled={isSaving}
+        onclick={toggleEngine} 
+        disabled={isSaving}
         class="group relative flex items-center gap-4 px-8 py-4 rounded-3xl transition-all duration-300 font-black uppercase tracking-widest overflow-hidden shadow-lg 
-        {$systemConfig.engine_status === 'on' 
+        {localConfig.engine_status === 'on' 
             ? 'bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600' 
             : 'bg-red-500 text-white shadow-red-500/20 hover:bg-red-600'}"
         >
-        <Power size={20} class={$systemConfig.engine_status === 'on' ? 'animate-pulse' : ''} />
-        <span>{isSaving ? 'Processing...' : `Engine ${$systemConfig.engine_status}`}</span>
+        <Power size={20} class={localConfig.engine_status === 'on' ? 'animate-pulse' : ''} />
+        <span>{isSaving ? 'Processing...' : `Engine ${localConfig.engine_status}`}</span>
       </button>
     </div>
 
@@ -100,39 +102,31 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                
                 <label class="space-y-2">
-                    <span class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Block Threshold (Max Points)</span>
-                    <input type="number" step="0.1" bind:value={$systemConfig.block_threshold} 
-                        class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-4 font-bold focus:ring-2 focus:ring-blue-500 text-slate-700 dark:text-slate-200" />
+                    <span class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Block Threshold</span>
+                    <input type="number" step="0.1" bind:value={localConfig.block_threshold} 
+                        class="input-field" />
                 </label>
 
                 <label class="space-y-2">
-                    <span class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Decay Rate (Recovery/Hour)</span>
-                    <input type="number" step="0.1" bind:value={$systemConfig.penalty_decay_rate} 
-                        class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-4 font-bold focus:ring-2 focus:ring-blue-500 text-slate-700 dark:text-slate-200" />
+                    <span class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Decay Rate</span>
+                    <input type="number" step="0.1" bind:value={localConfig.penalty_decay_rate} 
+                        class="input-field" />
                 </label>
 
                 <label class="space-y-2">
-                <span class="text-[10px] font-black text-blue-500 uppercase ml-2 tracking-widest">Heavy Rate (Judol Confirmed)</span>
-                <div class="relative">
-                    <input type="number" step="0.1" bind:value={$systemConfig.penalty_heavy_rate} 
-                        class="w-full bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800 rounded-2xl p-4 font-bold focus:ring-2 focus:ring-blue-500 text-slate-700 dark:text-slate-200" />
-                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-blue-400">PTS/HIT</span>
-                </div>
+                    <span class="text-[10px] font-black text-blue-500 uppercase ml-2 tracking-widest">Heavy Rate</span>
+                    <input type="number" step="0.1" bind:value={localConfig.penalty_heavy_rate} 
+                        class="input-field bg-blue-50/30 dark:bg-blue-900/10" />
                 </label>
 
                 <label class="space-y-2">
-                <span class="text-[10px] font-black text-amber-500 uppercase ml-2 tracking-widest">Suspect Rate (Anomalous)</span>
-                <div class="relative">
-                    <input type="number" step="0.1" bind:value={$systemConfig.penalty_suspect_rate} 
-                        class="w-full bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800 rounded-2xl p-4 font-bold focus:ring-2 focus:ring-amber-500 text-slate-700 dark:text-slate-200" />
-                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-amber-400">PTS/HIT</span>
-                </div>
+                    <span class="text-[10px] font-black text-amber-500 uppercase ml-2 tracking-widest">Suspect Rate</span>
+                    <input type="number" step="0.1" bind:value={localConfig.penalty_suspect_rate} 
+                        class="input-field bg-amber-50/30 dark:bg-amber-900/10" />
                 </label>
-
             </div>
-            </section>
+        </section>
 
         <section class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-6">
           <div class="flex items-center gap-3">
@@ -142,13 +136,11 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <label class="space-y-2">
               <span class="text-[10px] font-black text-slate-400 uppercase ml-2">Sniffer Device</span>
-              <input type="text" bind:value={$systemConfig.port_sniffer_device} 
-                     class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-4 font-bold focus:ring-2 focus:ring-purple-500 text-slate-700 dark:text-slate-200" />
+              <input type="text" bind:value={localConfig.interface_dst} class="input-field" />
             </label>
             <label class="space-y-2">
               <span class="text-[10px] font-black text-slate-400 uppercase ml-2">IP Filter (CIDR)</span>
-              <input type="text" bind:value={$systemConfig.ip_filter} 
-                     class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-4 font-mono font-bold focus:ring-2 focus:ring-purple-500 text-slate-700 dark:text-slate-200" />
+              <input type="text" bind:value={localConfig.ip_filter} class="input-field font-mono" />
               {#if errors.ip_filter}<p class="text-red-500 text-[10px] ml-2 font-bold">{errors.ip_filter}</p>{/if}
             </label>
           </div>
@@ -160,42 +152,24 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <Database class="text-orange-500" size={20} />
-                <h3 class="font-black text-slate-800 dark:text-white uppercase tracking-tighter">MikroTik Block API</h3>
+                <h3 class="font-black text-slate-800 dark:text-white uppercase tracking-tighter">MikroTik API</h3>
             </div>
             
             <button 
                 type="button"
-                onclick={() => $systemConfig.mikrotik_block_enabled = !$systemConfig.mikrotik_block_enabled}
-                aria-label="Toggle MikroTik API"
-                class="w-12 h-6 rounded-full transition-colors duration-200 relative {$systemConfig.mikrotik_block_enabled ? 'bg-orange-500' : 'bg-slate-300 dark:bg-slate-700'}"
+                onclick={() => localConfig.mikrotik_block_enabled = !localConfig.mikrotik_block_enabled}
+                class="w-12 h-6 rounded-full transition-colors relative {localConfig.mikrotik_block_enabled ? 'bg-orange-500' : 'bg-slate-300 dark:bg-slate-700'}"
+                aria-label={localConfig.mikrotik_block_enabled ? 'Disable MikroTik blocking' : 'Enable MikroTik blocking'}
             >
-                <div 
-                class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 
-                {$systemConfig.mikrotik_block_enabled ? 'translate-x-6' : 'translate-x-0'}"
-                ></div>
+                <div class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform {localConfig.mikrotik_block_enabled ? 'translate-x-6' : 'translate-x-0'}"></div>
             </button>
           </div>
 
-          {#if $systemConfig.mikrotik_block_enabled}
-            <div transition:slide={{ duration: 300 }} class="space-y-4 pt-2">
-                <label class="space-y-1">
-                <span class="text-[9px] font-black text-slate-400 uppercase ml-1">Router Host / IP</span>
-                <input type="text" placeholder="192.168.88.1" bind:value={$systemConfig.mikrotik_api_host} 
-                        class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500" />
-                </label>
-                
-                <div class="grid grid-cols-2 gap-3">
-                <label class="space-y-1">
-                    <span class="text-[9px] font-black text-slate-400 uppercase ml-1">Username</span>
-                    <input type="text" placeholder="admin" bind:value={$systemConfig.mikrotik_api_username} 
-                        class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500" />
-                </label>
-                <label class="space-y-1">
-                    <span class="text-[9px] font-black text-slate-400 uppercase ml-1">Password</span>
-                    <input type="password" placeholder="****" bind:value={$systemConfig.mikrotik_api_password} 
-                        class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500" />
-                </label>
-                </div>
+          {#if localConfig.mikrotik_block_enabled}
+            <div transition:slide class="space-y-4 pt-2">
+                <input type="text" placeholder="Router Host" bind:value={localConfig.mikrotik_api_host} class="input-field text-sm" />
+                <input type="text" placeholder="Username" bind:value={localConfig.mikrotik_api_username} class="input-field text-sm" />
+                <input type="password" placeholder="Password" bind:value={localConfig.mikrotik_api_password} class="input-field text-sm" />
             </div>
            {/if}
         </section>
@@ -218,6 +192,15 @@
 {:else}
   <div class="flex flex-col items-center justify-center h-[80vh] gap-4" in:fade>
     <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-    <p class="font-black text-slate-400 uppercase tracking-widest text-xs">Awaiting System Context...</p>
+    <p class="font-black text-slate-400 uppercase tracking-widest text-xs">Syncing System Context...</p>
   </div>
 {/if}
+
+<style lang="postcss">
+  /* Sesuaikan path ini dengan lokasi file CSS utama kamu */
+  @reference "../../../app.css"; 
+
+  .input-field {
+    @apply w-full bg-slate-50 dark:bg-slate-800 border-none rounded-2xl p-4 font-bold focus:ring-2 focus:ring-blue-500 text-slate-700 dark:text-slate-200 transition-all outline-none;
+  }
+</style>

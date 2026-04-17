@@ -15,18 +15,18 @@ export interface TrafficLog {
 }
 
 export interface PenaltyData {
-    ip_address: string;
-    penalty_points: number;
-    last_update: string;
+    src_ip: string;
+    current_penalty: number;
+    last_updated: string;
 }
 
 export interface BlockedIP {
-    ip_address: string;
+    src_ip: string;
     blocked_at: string;
-    unblocked_at?: string;
-    status: string;
-    reason: string;        // Tambahan baru
-    duration_minutes: number; // Tambahan baru
+    released_at?: string;
+    curr_status: string;
+    reason: string;     // Tambahan baru
+    blocked_duration_minutes: number; // Tambahan baru
 }
 
 export interface SystemConfig {
@@ -37,7 +37,7 @@ export interface SystemConfig {
     block_duration_minutes: number,
     mikrotik_block_enabled: boolean,    
     engine_status: string,
-    port_sniffer_device: string,
+    interface_dst: string,
     ip_filter: string,
     mikrotik_api_host: string,
     mikrotik_api_username: string,

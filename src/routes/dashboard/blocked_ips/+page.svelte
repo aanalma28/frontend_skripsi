@@ -6,9 +6,13 @@
   let searchTerm = $state('');
   let processingIps = $state(new Set());
 
-  // Filter pencarian IP
+  // =====================================================================
+  // 🛡️ SAFE GUARD: Gunakan ?? [] agar .filter tidak error saat store kosong
+  // =====================================================================
   let filteredBlocked = $derived(
-    $blockedStore.filter(b => b.ip_address.includes(searchTerm))
+    ($blockedStore ?? []).filter(b => 
+      b.src_ip.includes(searchTerm) && b.curr_status === 'Active'
+    )
   );
 
   // Fungsi Aksi: Membuka Blokir Manual
@@ -21,23 +25,24 @@
       const response = await fetch('http://localhost:5000/api/ip/release-block', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ip_address: ip })
+        // PERBAIKAN: Gunakan key 'ip' agar sesuai dengan route api_release_ip di Flask
+        body: JSON.stringify({ ip: ip }) 
       });
 
       const result = await response.json();
       
       if (result.status === 'success') {
-        // Hapus dari store lokal agar UI langsung update tanpa refresh
-        blockedStore.update(current => current.filter(b => b.ip_address !== ip));
+        // Optimistic UI: Hapus dari store lokal agar instan
+        blockedStore.update(current => (current ?? []).filter(b => b.src_ip !== ip));
         alert(`✅ SUCCESS: Akses IP ${ip} telah dipulihkan.`);
       } else {
-        alert("❌ ERROR: Gagal membuka blokir: " + result.message);
+        alert("❌ ERROR: " + result.message);
       }
     } catch (error) {
       console.error("Error release block:", error);
       alert("❌ ERROR: Terjadi kesalahan koneksi ke backend.");
     } finally {
-      processingIps.delete(ip); // Unlock
+      processingIps.delete(ip); 
     }
   }
 </script>
@@ -71,7 +76,7 @@
     <div>
       <h4 class="text-sm font-black text-blue-800 dark:text-blue-300 uppercase tracking-tighter">Administrator Control</h4>
       <p class="text-xs text-blue-600/70 dark:text-blue-400/50 mt-1 leading-relaxed">
-        IP yang terdaftar di bawah ini sedang dibatasi aksesnya oleh sistem. Administrator dapat memulihkan akses secara manual sebelum waktu blokir otomatis berakhir.
+        IP yang terdaftar di bawah ini sedang dibatasi aksesnya oleh sistem. Administrator dapat memulihkan akses secara manual.
       </p>
     </div>
   </div>
@@ -82,19 +87,19 @@
         <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[10px] uppercase font-black tracking-[0.2em]">
           <tr>
             <th class="px-8 py-5">Source Address</th>
-            <th class="px-8 py-5">Reason / Trigger</th>
+            <th class="px-8 py-5">Reason</th>
             <th class="px-8 py-5">Timestamp</th>
             <th class="px-8 py-5">Duration</th>
             <th class="px-8 py-5 text-right">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-          {#each filteredBlocked as block (block.ip_address)}
+          {#each filteredBlocked as block (block.src_ip)}
             <tr transition:slide={{duration: 200}} class="hover:bg-red-50/30 dark:hover:bg-red-900/10 transition-colors group">
               <td class="px-8 py-6">
                 <div class="flex items-center gap-3">
                   <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                  <span class="font-mono font-bold text-slate-700 dark:text-slate-200">{block.ip_address}</span>
+                  <span class="font-mono font-bold text-slate-700 dark:text-slate-200">{block.src_ip}</span>
                 </div>
               </td>
               
@@ -113,21 +118,22 @@
 
               <td class="px-8 py-6">
                 <span class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tighter">
-                   {block.duration_minutes} Minutes
+                   {block.blocked_duration_minutes} Min
                 </span>
               </td>
 
               <td class="px-8 py-6 text-right">
                 <button 
-                    onclick={() => releaseBlock(block.ip_address)}
-                    disabled={processingIps.has(block.ip_address)}
-                    class="disabled:opacity-50 disabled:cursor-not-allowed ..."
+                    onclick={() => releaseBlock(block.src_ip)}
+                    disabled={processingIps.has(block.src_ip)}
+                    class="relative inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 text-emerald-700 dark:text-emerald-400 rounded-xl font-black transition-all hover:scale-105 active:scale-95"
                 >
-                    {#if processingIps.has(block.ip_address)}
-                        <span class="animate-spin inline-block mr-2">↻</span> Processing...
+                    {#if processingIps.has(block.src_ip)}
+                        <span class="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
+                        <span class="text-[10px] uppercase">Processing</span>
                     {:else}
                         <Unlock size={14} />
-                        <span>Release Block</span>
+                        <span class="text-[10px] uppercase">Release Block</span>
                     {/if}
                 </button>
               </td>
