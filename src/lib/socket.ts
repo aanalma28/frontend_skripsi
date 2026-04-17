@@ -24,4 +24,17 @@ export const isAiConnected = writable<boolean>(false);
 export const penaltyStore = writable<PenaltyData[]>([]);
 export const blockedStore = writable<BlockedIP[]>([]);
 // Store untuk System Config (Singleton Cache)
-export const systemConfig = writable<SystemConfig>();
+export const systemConfig = writable<SystemConfig>({
+    block_threshold: 0,
+    penalty_heavy_rate: 0,
+    penalty_suspect_rate: 0,
+    penalty_decay_rate: 0,
+    block_duration_minutes: 0,
+    mikrotik_block_enabled: false,
+    engine_status: 'off', // Nilai aman agar UI tidak crash
+    port_sniffer_device: '',
+    ip_filter: '',
+    mikrotik_api_host: '',
+    mikrotik_api_username: '',
+    mikrotik_api_password: ''
+});

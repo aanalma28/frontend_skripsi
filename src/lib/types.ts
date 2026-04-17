@@ -35,7 +35,7 @@ export interface SystemConfig {
     penalty_suspect_rate: number,
     penalty_decay_rate: number,
     block_duration_minutes: number,
-    mikrotik_api_enabled: boolean,    
+    mikrotik_block_enabled: boolean,    
     engine_status: string,
     port_sniffer_device: string,
     ip_filter: string,
