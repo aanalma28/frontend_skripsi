@@ -113,7 +113,7 @@
             <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group">
               <td class="px-8 py-6">
                 <div class="flex flex-col">
-                  <span class="font-mono text-sm font-bold text-slate-700 dark:text-slate-300">{log.ip}</span>
+                  <span class="font-mono text-sm font-bold text-slate-700 dark:text-slate-300">{log.src_ip}</span>
                   <span class="text-[10px] text-slate-400 font-medium">Last Activity: {new Date().toLocaleTimeString()}</span>
                 </div>
               </td>

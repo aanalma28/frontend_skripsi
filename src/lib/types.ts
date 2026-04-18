@@ -3,7 +3,7 @@ export type LogType = 'FLOW' | 'PENALTY';
 export interface TrafficLog {
     id: number;
     type: LogType;    
-    ip: string;
+    src_ip: string;
     timestamp: string;
     penalty_score: number;
     confidence: number;

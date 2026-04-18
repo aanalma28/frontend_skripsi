@@ -9,7 +9,7 @@
   let filteredLogs = $derived(
     $trafficLogs.filter(log => {
       const s = searchTerm.toLowerCase();
-      const ipMatch = log.ip?.includes(s) ?? false;
+      const ipMatch = log.src_ip?.includes(s) ?? false;
       const method = (log.type === 'FLOW' ? log.method : '') || '';
       const methodMatch = method.toLowerCase().includes(s);
       return ipMatch || methodMatch;
@@ -91,7 +91,7 @@
               </td>
 
               <td class="p-4 font-bold {isDanger ? (isFlow ? 'text-amber-400' : 'text-red-400') : 'text-slate-300'}">
-                {log.ip}
+                {log.src_ip}
               </td>
 
               <td class="p-4">
