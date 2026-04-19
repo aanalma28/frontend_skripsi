@@ -105,7 +105,7 @@
 
               <td class="px-8 py-6 text-right">
                 <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border {getSeverityColor(p.current_penalty ?? 0)}">
-                  {#if p.current_penalty > 15} High Risk {:else if p.current_penalty > 7} Warning {:else} Monitoring {/if}
+                  {#if p.current_penalty > 8} High Risk {:else if p.current_penalty > 5} Warning {:else} Monitoring {/if}
                 </span>
               </td>
             </tr>

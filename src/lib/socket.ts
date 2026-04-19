@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { writable } from "svelte/store";
-import type { TrafficLog, TrafficStats, PenaltyData, BlockedIP, SystemConfig } from "./types";
+import type { TrafficLog, TrafficStats, PenaltyData, BlockedIP, SystemConfig, ReleasedIP } from "./types";
 
 
 export const socket: Socket = io("http://localhost:5000", {
@@ -23,6 +23,7 @@ export const isAiConnected = writable<boolean>(false);
 // STORES BARU (Untuk Fitur Penalty & Block)
 export const penaltyStore = writable<PenaltyData[]>([]);
 export const blockedStore = writable<BlockedIP[]>([]);
+export const releasedIp = writable<ReleasedIP | null>(null);
 // Store untuk System Config (Singleton Cache)
 export const systemConfig = writable<SystemConfig>({
     block_threshold: 0,

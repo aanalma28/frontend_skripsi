@@ -24,6 +24,7 @@ export interface BlockedIP {
     src_ip: string;
     blocked_at: string;
     released_at?: string;
+    message?: string;
     curr_status: string;
     reason: string;     // Tambahan baru
     blocked_duration_minutes: number; // Tambahan baru
