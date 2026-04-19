@@ -21,6 +21,7 @@ export interface PenaltyData {
 }
 
 export interface BlockedIP {
+    id: string;
     src_ip: string;
     blocked_at: string;
     released_at?: string;
