@@ -17,8 +17,8 @@
 
   // Helper untuk menentukan warna berdasarkan tingkat bahaya
   const getSeverityColor = (points: number) => {
-    if (points > 15) return 'text-red-600 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
-    if (points > 7) return 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800';
+    if (points >= 8) return 'text-red-600 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
+    if (points > 5) return 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800';
     return 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
   };
 </script>
@@ -87,7 +87,7 @@
                    <div class="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                     <div 
                       class="h-full bg-amber-500 transition-all duration-500" 
-                      style="width: {Math.min(((p.current_penalty ?? 0) / 20) * 100, 100)}%">
+                      style="width: {Math.min(((p.current_penalty ?? 0) / 10) * 100, 100)}%">
                     </div>
                   </div>
                   <span class="text-lg font-black text-slate-800 dark:text-white italic">
@@ -105,7 +105,7 @@
 
               <td class="px-8 py-6 text-right">
                 <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border {getSeverityColor(p.current_penalty ?? 0)}">
-                  {#if p.current_penalty > 8} High Risk {:else if p.current_penalty > 5} Warning {:else} Monitoring {/if}
+                  {#if p.current_penalty >= 8} High Risk {:else if p.current_penalty > 5} Warning {:else} Monitoring {/if}
                 </span>
               </td>
             </tr>

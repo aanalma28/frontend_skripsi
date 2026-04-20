@@ -1,7 +1,7 @@
 <script lang="ts">
   import { systemConfig } from '$lib/socket';
   import { 
-    Settings, Save, Power, 
+    Settings, Save, Power, Clock,
     Network, Database, Cpu, RefreshCcw 
   } from 'lucide-svelte';
   import { fade, slide } from 'svelte/transition';
@@ -9,11 +9,8 @@
   let isSaving = $state(false);
   let errors: Record<string, string> = $state({});
 
-  // 🛡️ REVISI SVELTE 5: Gunakan local state untuk form binding agar stabil
-  // Kita salin data dari store ke state lokal
   let localConfig = $state({ ...($systemConfig || {}) });
 
-  // Sinkronkan localConfig jika store berubah (misal saat initial fetch selesai)
   $effect(() => {
     if ($systemConfig && Object.keys($systemConfig).length > 0) {
       localConfig = { ...$systemConfig };
@@ -25,6 +22,8 @@
     const cfg = localConfig;
 
     if (cfg.block_threshold <= 0) newErrors.block_threshold = "Threshold harus positif";
+    // Validasi tambahan untuk durasi blokir
+    if (cfg.block_duration_minutes < 1) newErrors.block_duration = "Minimal blokir 1 menit";
     
     const cidrRegex = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
     if (!cidrRegex.test(cfg.ip_filter || '')) {
@@ -43,12 +42,12 @@
       const response = await fetch('http://localhost:5000/api/config/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(localConfig) // Kirim data dari state lokal
+        body: JSON.stringify(localConfig)
       });
 
       const result = await response.json();
       if (result.status === 'success') {
-        systemConfig.set(localConfig); // Update store global setelah sukses
+        systemConfig.set(localConfig);
         alert("✅ SUCCESS: Konfigurasi Sistem Berhasil Diperbarui!");
       }
     } catch (err) {
@@ -61,7 +60,7 @@
 
   function toggleEngine() {
     localConfig.engine_status = localConfig.engine_status === 'on' ? 'off' : 'on';
-    handleSave(); // Langsung simpan saat toggle ditekan
+    handleSave();
   }
 </script>
 
@@ -109,13 +108,23 @@
                 </label>
 
                 <label class="space-y-2">
-                    <span class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Decay Rate</span>
+                    <div class="flex items-center gap-2 ml-2">
+                        <Clock size={12} class="text-emerald-500" />
+                        <span class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Auto Block Duration (Min)</span>
+                    </div>
+                    <input type="number" bind:value={localConfig.block_duration_minutes} 
+                        class="input-field bg-emerald-50/30 dark:bg-emerald-900/10 border-emerald-100" />
+                    {#if errors.block_duration}<p class="text-red-500 text-[10px] ml-2 font-bold">{errors.block_duration}</p>{/if}
+                </label>
+
+                <label class="space-y-2">
+                    <span class="text-[10px] font-black text-blue-400 uppercase ml-2 tracking-widest">Decay Rate</span>
                     <input type="number" step="0.1" bind:value={localConfig.penalty_decay_rate} 
                         class="input-field" />
                 </label>
 
                 <label class="space-y-2">
-                    <span class="text-[10px] font-black text-blue-500 uppercase ml-2 tracking-widest">Heavy Rate</span>
+                    <span class="text-[10px] font-black text-red-500 uppercase ml-2 tracking-widest">Heavy Rate</span>
                     <input type="number" step="0.1" bind:value={localConfig.penalty_heavy_rate} 
                         class="input-field bg-blue-50/30 dark:bg-blue-900/10" />
                 </label>
@@ -158,8 +167,9 @@
             <button 
                 type="button"
                 onclick={() => localConfig.mikrotik_block_enabled = !localConfig.mikrotik_block_enabled}
+                aria-label="Toggle MikroTik block"
+                title="Toggle MikroTik block"
                 class="w-12 h-6 rounded-full transition-colors relative {localConfig.mikrotik_block_enabled ? 'bg-orange-500' : 'bg-slate-300 dark:bg-slate-700'}"
-                aria-label={localConfig.mikrotik_block_enabled ? 'Disable MikroTik blocking' : 'Enable MikroTik blocking'}
             >
                 <div class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform {localConfig.mikrotik_block_enabled ? 'translate-x-6' : 'translate-x-0'}"></div>
             </button>
@@ -197,7 +207,6 @@
 {/if}
 
 <style lang="postcss">
-  /* Sesuaikan path ini dengan lokasi file CSS utama kamu */
   @reference "../../../app.css"; 
 
   .input-field {
