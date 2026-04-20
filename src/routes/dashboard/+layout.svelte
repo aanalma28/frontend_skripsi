@@ -61,7 +61,7 @@ onMount(() => {
             });
 
             // Listener Real-time untuk Blokir Baru
-            socket.on('new_blocked', (data: BlockedIP) => {
+            socket.on('new_block', (data: BlockedIP) => {
                 blockedStore.update(list => {
                     const currentList = list ?? [];
                     // Cari apakah IP ini sudah ada di list (berdasarkan ID atau IP)
