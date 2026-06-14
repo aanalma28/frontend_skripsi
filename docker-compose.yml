@@ -1,0 +1,13 @@
+services:
+  frontend:
+    build: .
+    container_name: sentinel_frontend
+
+    # WAJIB: Host network agar frontend bisa akses backend di localhost:5000
+    network_mode: host
+
+    environment:
+      - PORT=${FRONTEND_PORT:-5173}
+      - HOST=0.0.0.0
+
+    restart: unless-stopped

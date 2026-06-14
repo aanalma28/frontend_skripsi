@@ -91,12 +91,12 @@
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="md:col-span-2 bg-slate-900 p-6 rounded-[2rem] text-white flex items-center gap-6 shadow-xl relative overflow-hidden">
+    <div class="md:col-span-2 border border-slate-100 dark:border-slate-800 dark:bg-slate-900 p-6 rounded-[2rem] text-white flex items-center gap-6 shadow-xl relative overflow-hidden">
       <div class="bg-blue-500/20 p-4 rounded-2xl text-blue-400">
         <Info size={24} />
       </div>
       <div>
-        <h4 class="text-xs font-black uppercase tracking-[0.2em] mb-1">Interpretation Guide</h4>
+        <h4 class="text-xs font-black dark:text-white text-slate-800 uppercase tracking-[0.2em] mb-1">Interpretation Guide</h4>
         <p class="text-[11px] text-slate-400 leading-relaxed max-w-2xl">
           Sumbu X dan Y merepresentasikan dimensi laten dari trafik terenkripsi. Titik yang menjauhi pusat koordinat <b>[0,0]</b> mengindikasikan deviasi perilaku trafik (Anomali) yang diklasifikasikan sebagai pola akses perjudian online melalui terowongan VPN/DoH.
         </p>

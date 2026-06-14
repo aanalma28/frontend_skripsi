@@ -1,0 +1,10 @@
+node_modules
+.svelte-kit
+build
+.git
+.vscode
+*.md
+.prettierrc
+.prettierignore
+.eslintrc.*
+eslint.config.js
